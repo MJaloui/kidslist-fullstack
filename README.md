@@ -22,14 +22,14 @@ This project contains:
 ## MongoDB Collections
 
 - **gifts** - Contains gift ideas with:
-  - username (String)
-  - recipient (String)
-  - occasion (String)
-  - giftIdea (String)
-  - budget (Number)
-  - purchased (Boolean)
-  - feedback (String) - "Good Buy" or "Not Recommended"
-  - timestamps (createdAt, updatedAt)
+  - username 
+  - recipient
+  - occasion
+  - giftIdea 
+  - Pricing 
+  - purchased 
+  - feedback "Good Buy" or "Don't Buy"
+
 
 ## Installation
 
