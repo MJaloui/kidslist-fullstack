@@ -1,6 +1,6 @@
 # Kidslist
 
-A fullstack application for tracking and managing gift ideas for friends and family members.
+A fullstack application for tracking and managing gifts.
 
 ## Project Structure
 
