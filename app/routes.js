@@ -1,5 +1,14 @@
+const { ObjectId } = require('mongodb');
+
+const toObjectId = (id) => {
+  try {
+    return new ObjectId(id);
+  } catch (err) {
+    return null;
+  }
+};
+
 module.exports = function (app, passport, db) {
-  // help with Sherrell
   // normal routes ===============================================================
 
   // show the home page (will also have our login links)
@@ -9,59 +18,167 @@ module.exports = function (app, passport, db) {
 
   // PROFILE SECTION =========================
   app.get('/profile', isLoggedIn, function (req, res) {
-    db.collection('messages').find().toArray((err, result) => {
-      if (err) return console.log(err)
-      res.render('profile.ejs', {
-        user: req.user,
-        messages: result
-      })
-    })
+    db.collection('gifts')
+      .find({ userId: req.user._id })
+      .sort({ purchased: 1, createdAt: -1 })
+      .toArray((err, gifts) => {
+        if (err) return console.log(err);
+        res.render('profile.ejs', {
+          user: req.user,
+          gifts
+        });
+      });
   });
 
   // LOGOUT ==============================
   app.get('/logout', function (req, res) {
     req.logout(() => {
-      console.log('User has logged out!')
+      console.log('User has logged out!');
     });
     res.redirect('/');
   });
 
-  // message board routes ===============================================================
+  // gift routes ===============================================================
 
-  app.post('/messages', (req, res) => {
-    db.collection('messages').save({ name: req.body.name, msg: req.body.msg, thumbUp: 0, thumbDown: 0 }, (err, result) => {
-      if (err) return console.log(err)
-      console.log('saved to database')
-      res.redirect('/profile')
-    })
-  })
+  app.post('/gifts', isLoggedIn, (req, res) => {
+    const price = req.body.price ? Number(req.body.price) : null;
+    const payload = {
+      title: req.body.title || 'Untitled Gift',
+      link: req.body.link || '',
+      price: isFinite(price) ? price : null,
+      recipient: req.body.recipient || '',
+      purchased: false,
+      rating: null,
+      greatBuyCount: 0,
+      dontBuyCount: 0,
+      userId: req.user._id,
+      createdAt: new Date()
+    };
 
-  app.put('/messages', (req, res) => {
-    const thumb = Object.keys(req.body).includes('thumbUp') // .includes checks is thumbs up is in the array
-    const thumbValue = thumb ?
-      //checking if thumb is true or false
-      req.body.thumbUp + 1 :
-      req.body.thumbDown - 1;
-    db.collection('messages')
-      .findOneAndUpdate({ name: req.body.name, msg: req.body.msg }, {
+    db.collection('gifts').insertOne(payload, err => {
+      if (err) return console.log(err);
+      res.redirect('/profile');
+    });
+  });
+
+  app.post('/gifts/update', isLoggedIn, (req, res) => {
+    const giftId = req.body.id;
+    const giftObjectId = toObjectId(giftId);
+    if (!giftObjectId) return res.redirect('/profile');
+
+    const price = req.body.price ? Number(req.body.price) : null;
+
+    db.collection('gifts').findOneAndUpdate(
+      { _id: giftObjectId, userId: req.user._id },
+      {
         $set: {
-          thumbUp: thumbValue
+          title: req.body.title || 'Untitled Gift',
+          link: req.body.link || '',
+          price: isFinite(price) ? price : null,
+          recipient: req.body.recipient || ''
         }
-      }, {
-        sort: { _id: -1 },
-        upsert: true
-      }, (err, result) => {
-        if (err) return res.send(err)
-        res.send(result)
-      })
-  })
+      },
+      {},
+      err => {
+        if (err) return console.log(err);
+        res.redirect('/profile');
+      }
+    );
+  });
 
-  app.delete('/messages', (req, res) => {
-    db.collection('messages').findOneAndDelete({ name: req.body.name, msg: req.body.msg }, (err, result) => {
-      if (err) return res.send(500, err)
-      res.send('Message deleted!')
-    })
-  })
+  app.post('/gifts/purchased', isLoggedIn, (req, res) => {
+    const giftId = req.body.id;
+    const giftObjectId = toObjectId(giftId);
+    if (!giftObjectId) return res.redirect('/profile');
+
+    const purchased = req.body.purchased === 'true';
+
+    db.collection('gifts').findOneAndUpdate(
+      { _id: giftObjectId, userId: req.user._id },
+      { $set: { purchased } },
+      {},
+      err => {
+        if (err) return console.log(err);
+        res.redirect('/profile');
+      }
+    );
+  });
+
+  app.post('/gifts/reset-rating', isLoggedIn, (req, res) => {
+    const giftId = req.body.id;
+    const giftObjectId = toObjectId(giftId);
+    if (!giftObjectId) return res.redirect('/profile');
+
+    db.collection('gifts').findOneAndUpdate(
+      { _id: giftObjectId, userId: req.user._id },
+      { $set: { greatBuyCount: 0, dontBuyCount: 0, rating: null } },
+      { returnOriginal: false },
+      (err, result) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        const doc = result && (result.value || result);
+        if (!doc) return res.status(404).json({ error: 'Gift not found' });
+
+        if (req.headers.accept && req.headers.accept.includes('application/json')) {
+          return res.json({ greatBuyCount: 0, dontBuyCount: 0, rating: null });
+        }
+
+        res.redirect('/profile');
+      }
+    );
+  });
+
+  app.put('/gifts/review', isLoggedIn, (req, res) => {
+    const giftId = req.body.id;
+    const giftObjectId = toObjectId(giftId);
+    if (!giftObjectId) return res.status(400).json({ error: 'Invalid gift id' });
+
+    const action = req.body.action;
+    let update;
+
+    if (action === 'up') {
+      update = {
+        $inc: { greatBuyCount: 1 },
+        $set: { rating: 'great' }
+      };
+    } else if (action === 'down') {
+      update = {
+        $inc: { dontBuyCount: 1 },
+        $set: { rating: 'dont' }
+      };
+    } else {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    db.collection('gifts').findOneAndUpdate(
+      { _id: giftObjectId, userId: req.user._id },
+      update,
+      { returnOriginal: false },
+      (err, result) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        const doc = result && (result.value || result);
+        if (!doc) return res.status(404).json({ error: 'Gift not found' });
+        res.json({
+          greatBuyCount: doc.greatBuyCount || 0,
+          dontBuyCount: doc.dontBuyCount || 0,
+          rating: doc.rating || null
+        });
+      }
+    );
+  });
+
+  app.post('/gifts/delete', isLoggedIn, (req, res) => {
+    const giftId = req.body.id;
+    const giftObjectId = toObjectId(giftId);
+    if (!giftObjectId) return res.redirect('/profile');
+
+    db.collection('gifts').findOneAndDelete(
+      { _id: giftObjectId, userId: req.user._id },
+      err => {
+        if (err) return res.sendStatus(500);
+        res.redirect('/profile');
+      }
+    );
+  });
 
   // =============================================================================
   // AUTHENTICATE (FIRST LOGIN) ==================================================
@@ -106,7 +223,7 @@ module.exports = function (app, passport, db) {
     var user = req.user;
     user.local.email = undefined;
     user.local.password = undefined;
-    user.save(function (err) {
+    user.save(function () {
       res.redirect('/profile');
     });
   });

@@ -1,64 +1,151 @@
 <!doctype html>
 <html>
 <head>
-    <title>21 Savage Fan Site</title>
+    <title>KidsList | Gift Dashboard</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="dashboard-page">
 <div class="container">
 
     <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
+        <h1><span class="fa fa-gift"></span> KidsList</h1>
+        <p class="lead">Keep track of every gift in one place.</p>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
 
     <div class="row">
+        <!-- ACCOUNT + ADD GIFT -->
+        <div class="col-sm-4">
+            <div class="well account-card">
+                <h3><span class="fa fa-user"></span> Your Account</h3>
 
-        <!-- LOCAL INFORMATION -->
-        <div class="col-sm-6">
-            <div class="well">
-                <h3><span class="fa fa-user"></span> Local</h3>
-
-                <% if (user.local.email) { %>
-                    <p>
-                        <strong>id</strong>: <%= user._id %><br>
-                        <strong>email</strong>: <%= user.local.email %><br>
-                        <strong>password</strong>: <%= user.local.password %>
-                    </p>
-
-                    <a href="/unlink/local" class="btn btn-default">Unlink</a>
+                <% if (user.local && user.local.email) { %>
+                    <p><strong>Email:</strong> <%= user.local.email %></p>
                 <% } else { %>
-                    <a href="/connect/local" class="btn btn-default">Connect Local</a>
+                    <p>No email linked yet.</p>
+                    <a href="/connect/local" class="btn btn-default btn-sm">Connect Email</a>
                 <% } %>
+                <p><strong>Gifts saved:</strong> <%= gifts.length %></p>
 
+                <hr>
+
+                <h3><span class="fa fa-plus-circle"></span> Add a Gift</h3>
+                <form action="/gifts" method="POST">
+                    <div class="form-group">
+                        <label for="title">Gift Title</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="Gift" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient">Who is it for?</label>
+                        <input type="text" class="form-control" id="recipient" name="recipient" placeholder="Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="link">Link</label>
+                        <input type="url" class="form-control" id="link" name="link" placeholder="https://">
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" placeholder="Enter price">
+                    </div>
+                    <button type="submit" class="btn btn-default btn-block">Save Gift</button>
+                </form>
             </div>
         </div>
-        <div class="col-sm-6">
-          <h3>Messages</h3>
-          <ul class="messages">
-          <% for(var i=0; i<messages.length; i++) {%>
-            <li class="message">
-              <span><%= messages[i].name %></span>
-              <span><%= messages[i].msg %></span>
-              <span><%= messages[i].thumbUp %></span>
-              <span><i class="fa fa-thumbs-up" aria-hidden="true"></i></span>
-              <span><i class="fa fa-thumbs-down" aria-hidden="true"></i></span>
-              <span><i class="fa fa-trash" aria-hidden="true"></i></span>
-            </li>
-          <% } %>
-          </ul>
 
-          <h2>Add a message</h2>
-        <% if (user.local.email) { %>
-          <form action="/messages" method="POST">
-            <input type="text" value="<%= user.local.email %>" name="name">
-            <input type="text" placeholder="message" name="msg">
-            <button type="submit">Submit</button>
-          </form>
+        <!-- GIFTS LIST -->
+        <div class="col-sm-8">
+            <h3><span class="fa fa-list"></span> Your Gifts</h3>
+
+            <% if (!gifts.length) { %>
+                <div class="alert alert-info">
+                    Start your list with the form on the left. Add links, prices, and who each gift is for so you never forget.
+                </div>
+            <% } %>
+
+            <% gifts.forEach(function(gift) { %>
+                <div class="panel panel-default gift-card<%= gift.purchased ? ' gift-card--purchased' : '' %>">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <span class="fa fa-gift"></span>
+                            <%= gift.title %>
+                            <% if (gift.purchased) { %>
+                                <span class="label label-success gift-status">Purchased</span>
+                            <% } else { %>
+                                <span class="label label-warning gift-status">Need to buy</span>
+                            <% } %>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <p><strong>For:</strong> <%= gift.recipient || '—' %></p>
+                        <% if (gift.link) { %>
+                            <p><strong>Link:</strong> <a href="<%= gift.link %>" target="_blank" rel="noopener noreferrer"><%= gift.link %></a></p>
+                        <% } %>
+                        <% if (typeof gift.price === 'number') { %>
+                            <p><strong>Price:</strong> $<%= gift.price.toFixed(2) %></p>
+                        <% } else { %>
+                            <p><strong>Price:</strong> —</p>
+                        <% } %>
+
+                        <details>
+                            <summary>Edit details</summary>
+                            <form action="/gifts/update" method="POST" class="gift-edit-form">
+                                <input type="hidden" name="id" value="<%= gift._id %>">
+                                <div class="form-group">
+                                    <label>Gift Title</label>
+                                    <input type="text" class="form-control" name="title" value="<%= gift.title %>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Who is it for?</label>
+                                    <input type="text" class="form-control" name="recipient" value="<%= gift.recipient || '' %>">
+                                </div>
+                                <div class="form-group">
+                                    <label>Link</label>
+                                    <input type="url" class="form-control" name="link" value="<%= gift.link || '' %>">
+                                </div>
+                                <div class="form-group">
+                                    <label>Price</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="price" value="<%= typeof gift.price === 'number' ? gift.price : '' %>">
+                                </div>
+                                <button type="submit" class="btn btn-default btn-sm">Save changes</button>
+                            </form>
+                        </details>
+
+                        <div class="gift-actions">
+                            <form action="/gifts/purchased" method="POST">
+                                <input type="hidden" name="id" value="<%= gift._id %>">
+                                <input type="hidden" name="purchased" value="<%= !gift.purchased %>">
+                                <button type="submit" class="btn btn-sm <%= gift.purchased ? 'btn-success' : 'btn-default' %>">
+                                    Purchased
+                                </button>
+                            </form>
+                            <div class="gift-review-controls" data-id="<%= gift._id %>">
+                                <button type="button" class="btn btn-default btn-sm gift-review-btn<%= gift.rating === 'great' ? ' active' : '' %>" data-action="up">
+                                    ❤️ Great buy
+                                    <span class="gift-review-count"><%= typeof gift.greatBuyCount === 'number' ? gift.greatBuyCount : 0 %></span>
+                                </button>
+                                <button type="button" class="btn btn-default btn-sm gift-review-btn<%= gift.rating === 'dont' ? ' active' : '' %>" data-action="down">
+                                    ❌ Don't buy
+                                    <span class="gift-review-count"><%= typeof gift.dontBuyCount === 'number' ? gift.dontBuyCount : 0 %></span>
+                                </button>
+                            </div>
+                            <form action="/gifts/reset-rating" method="POST" class="gift-reset-form">
+                                <input type="hidden" name="id" value="<%= gift._id %>">
+                                <button type="submit" class="btn btn-default btn-sm">Reset rating</button>
+                            </form>
+                            <form action="/gifts/delete" method="POST" data-confirm="Remove this gift idea?">
+                                <input type="hidden" name="id" value="<%= gift._id %>">
+                                <button type="submit" class="btn btn-default btn-sm text-danger">
+                                    <span class="fa fa-trash"></span> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
         </div>
-        <% } %>
+    </div>
 
 </div>
 

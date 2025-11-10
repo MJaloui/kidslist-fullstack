@@ -1,7 +1,177 @@
+//help with claude to design this css
+
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+
 body{
   padding-top:80px;
   word-wrap:break-word;
+  background:url('img/b2.png') center/cover fixed no-repeat;
+  font-family:'Quicksand', 'Helvetica Neue', Arial, sans-serif;
+  color:#2f3b4a;
+  min-height:100vh;
 }
+
 img{
-  height: 200px;
+  height:200px;
+}
+
+body.auth-page{
+  padding:40px 15px;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:url('img/b1.png') center/cover no-repeat fixed;
+}
+
+body.dashboard-page{
+  background:url('img/b3.png') center/cover fixed no-repeat;
+}
+
+.auth-card{
+  background:rgba(255,255,255,0.92);
+  padding:40px 35px;
+  border-radius:16px;
+  box-shadow:0 22px 50px rgba(28,40,55,0.2);
+  width:100%;
+  max-width:430px;
+}
+
+.auth-card h1{
+  margin-top:0;
+  margin-bottom:25px;
+  text-align:center;
+  font-weight:700;
+}
+
+.auth-card .btn{
+  width:100%;
+  border-radius:8px;
+}
+
+.kidslist-hero{
+  background:rgba(255,255,255,0.3);
+  border-radius:22px;
+  border:1px solid rgba(223,205,182,0.6);
+  padding:55px 45px;
+  box-shadow:0 12px 30px rgba(40,35,28,0.18);
+  backdrop-filter:blur(6px);
+  color:#243043;
+}
+
+.kidslist-hero .btn{
+  min-width:120px;
+  margin:0 10px;
+}
+
+.kidslist-hero h1{
+  color:#243043;
+  font-weight:700;
+}
+
+.kidslist-hero .lead{
+  color:#314051;
+}
+
+.gift-card{
+  border-radius:20px;
+  border:4px solid rgba(193,155,107,0.55);
+  box-shadow:0 20px 45px rgba(33,44,60,0.12);
+  background:rgba(255,255,255,0.92);
+}
+
+.gift-card--purchased{
+  border-left-width:4px;
+}
+
+.gift-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:18px;
+}
+
+.gift-actions form{
+  display:inline-block;
+}
+
+.gift-actions button{
+  min-width:150px;
+  border-radius:999px;
+}
+
+.gift-review-controls{
+  display:flex;
+  gap:12px;
+}
+
+.gift-review-controls .gift-review-btn{
+  min-width:140px;
+  border-radius:999px;
+  background:#f3f4f8;
+  border-color:#dfe4ee;
+  color:#2f3c4f;
+}
+
+.gift-review-controls .gift-review-btn.active{
+  background:#d8aa82;
+  border-color:#d8aa82;
+  color:#fff;
+  box-shadow:0 12px 25px rgba(216,170,130,0.35);
+}
+
+.dashboard-container{
+  max-width:1120px;
+}
+
+.page-header{
+  background:linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(246,229,209,0.9) 100%);
+  padding:40px 35px;
+  border-radius:24px;
+  box-shadow:0 22px 50px rgba(45,36,25,0.18);
+  border:5px solid rgba(193,155,107,0.75);
+  margin-bottom:45px;
+}
+
+.page-header h1{
+  font-weight:700;
+  margin-bottom:12px;
+}
+
+.page-header .lead{
+  font-size:18px;
+  color:#5c4a3a;
+}
+
+.account-card{
+  background:linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(247,231,210,0.88) 100%);
+  border:4px solid rgba(193,155,107,0.65);
+  border-radius:20px;
+  box-shadow:0 20px 50px rgba(45,36,25,0.16);
+  padding:25px;
+}
+
+.account-card h3{
+  font-weight:700;
+  color:#3d2e22;
+}
+
+.account-card hr{
+  border-top:2px solid rgba(193,155,107,0.35);
+}
+
+.gift-card .panel-heading{
+  background:linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(242,224,202,0.85) 100%);
+  border-bottom:1px solid rgba(193,155,107,0.35);
+}
+
+.gift-card .panel-body{
+  background:rgba(255,255,255,0.95);
+  border-radius:0 0 18px 18px;
+}
+
+.alert-info{
+  background:rgba(255,255,255,0.9);
+  border:2px solid rgba(193,155,107,0.45);
+  color:#4a3d2f;
 }
