@@ -2,6 +2,9 @@
 
 A fullstack application for tracking and managing gifts.
 
+<img width="1094" height="753" alt="image" src="https://github.com/user-attachments/assets/7ddabbd0-8437-448b-85f4-9b29182893c1" />
+
+
 ## Project Structure
 
 This project contains:
