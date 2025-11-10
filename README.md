@@ -1,6 +1,6 @@
 # Kidslist
 
-A fullstack application for tracking and managing gifts.
+A fullstack application for tracking and managing gifts with you family and friends.
 
 <img width="1105" height="759" alt="image" src="https://github.com/user-attachments/assets/13bf1de4-f666-4847-b8b6-e415c568c7b8" />
 
